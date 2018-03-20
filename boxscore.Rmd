@@ -1,0 +1,36 @@
+---
+title: "boxscore"
+author: "Koki Ando"
+date: "3/20/2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(plotly)
+
+stats <- fread("../input/2016-17_playerBoxScore.csv", data.table = FALSE)
+stats <- 
+  stats %>% 
+  unite(playFNm, playLNm, col = "player", sep = " ")
+
+threepoint.cumsum <- 
+  stats %>% 
+  group_by(player) %>% 
+  mutate(cum3PM = cumsum(play3PM)) %>% 
+  select(gmDate, player:teamDiv, cum3PM)
+
+threepoint.cumsum$gmDate <- as.Date(threepoint.cumsum$gmDate)
+
+
+plot_ly(threepoint.cumsum, 
+        x = ~gmDate, y=~cum3PM, group = ~player, color = ~teamAbbr, 
+        type = 'scatter', mode = 'lines', showlegend = TRUE,
+        text = ~paste(player)) %>% 
+  layout(title = "2016-17 Season 3 point record chart",
+         xaxis = list(title = "Date",
+                      showticklabels = TRUE),
+         yaxis = list(title = "3point shoot made"))
+```
+
